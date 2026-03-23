@@ -22,7 +22,6 @@ def inject_custom_css():
         /* 🎨 CSS Variables for Theme Awareness */
         :root {{
             --primary-theme: {theme_color};
-            --text-main: inherit;
         }}
 
         /* 📱 Base App Styling */
@@ -40,42 +39,44 @@ def inject_custom_css():
         }}
 
         /* 💡 Mode Selection & Component Card Styling */
-        div[data-testid="column"], [data-testid="stVerticalBlock"] > div:has(div.metric-card) {{
-            background-color: var(--background-secondary-color, rgba(255, 255, 255, 0.7));
+        div[data-testid="column"], [data-testid="stVerticalBlock"] > div:has(div.metric-card), [data-testid="stForm"] {{
+            background-color: var(--secondary-background-color) !important;
             padding: 2rem;
             border-radius: 1.25rem;
-            border: 1px solid rgba(128, 128, 128, 0.1);
+            border: 1px solid rgba(128, 128, 128, 0.1) !important;
             backdrop-filter: blur(12px);
             box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }}
         
-        div[data-testid="column"]:hover {{
+        div[data-testid="column"]:hover, [data-testid="stForm"]:hover {{
             transform: translateY(-4px);
             box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.1);
-            border-color: var(--primary-theme);
+            border-color: var(--primary-theme) !important;
         }}
 
-        /* 🖋️ Fix for Input Labels and Descriptions in Dark Mode */
-        [data-testid="stWidgetLabel"] p, label p, .stMarkdown p, .stCaption p {{
-            color: inherit !important;
-            font-weight: 500 !important;
-            opacity: 1 !important;
+        /* 🖋️ Fix for Input Labels, Checkboxes, and Descriptions in Dark Mode */
+        label p, .stMarkdown p, .stCaption p, [data-testid="stWidgetLabel"] p, div[data-baseweb="checkbox"] label {{
+            color: var(--text-color) !important;
+            font-weight: 600 !important;
+            opacity: 0.9 !important;
         }}
         
         /* Input Field Enhancements */
         .stTextInput input, .stTextArea textarea, .stSelectbox [data-baseweb="select"] {{
             border-radius: 0.75rem !important;
-            border: 1px solid rgba(128, 128, 128, 0.2) !important;
+            border: 1px solid rgba(128, 128, 128, 0.3) !important;
+            background-color: var(--background-color) !important;
+            color: var(--text-color) !important;
             transition: all 0.2s ease;
         }}
-        .stTextInput input:focus {{
+        .stTextInput input:focus, .stTextArea textarea:focus {{
             border-color: var(--primary-theme) !important;
-            box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
+            box-shadow: 0 0 0 2px rgba(128, 128, 128, 0.2) !important;
         }}
 
-        /* 🔵 Primary Buttons */
-        button[kind="primary"] {{
+        /* 🔵 Primary Buttons (Including Form Submit) */
+        button[kind="primary"], button[kind="primaryFormSubmit"] {{
             background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
             color: white !important;
             border: none !important;
@@ -85,58 +86,45 @@ def inject_custom_css():
             box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.3);
             transition: all 0.2s ease !important;
         }}
-        button[kind="primary"]:hover {{
+        button[kind="primary"]:hover, button[kind="primaryFormSubmit"]:hover {{
             transform: translateY(-2px) !important;
             box-shadow: 0 6px 12px -2px rgba(2, 132, 199, 0.4) !important;
+            filter: brightness(1.1);
         }}
         
-        /* 🟢 Secondary Buttons */
-        button[kind="secondary"] {{
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        /* 🟢 Secondary Buttons (Including Form Submit) */
+        button[kind="secondary"], button[kind="secondaryFormSubmit"] {{
+            background: var(--primary-theme) !important;
             color: white !important;
             border: none !important;
             border-radius: 0.75rem !important;
             font-weight: 700 !important;
             padding: 0.6rem 1.2rem !important;
-            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             transition: all 0.2s ease !important;
         }}
-        button[kind="secondary"]:hover {{
+        button[kind="secondary"]:hover, button[kind="secondaryFormSubmit"]:hover {{
             transform: translateY(-2px) !important;
-            box-shadow: 0 6px 12px -2px rgba(16, 185, 129, 0.4) !important;
+            box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.2) !important;
+            filter: brightness(1.1);
         }}
 
         /* Dashboard Metric Cards */
         .metric-card {{
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--secondary-background-color);
             padding: 1.5rem;
             border-radius: 1rem;
             border-left: 6px solid var(--primary-theme);
             margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
         }}
         .metric-card:hover {{
             transform: translateX(5px);
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--background-color);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }}
 
-        /* Dark Mode Specific Adjustments */
-        @media (prefers-color-scheme: dark) {{
-            :root {{
-                --primary-theme: {theme_color if st.session_state.get("mode") else "#cbd5e1"};
-            }}
-            div[data-testid="column"] {{
-                background-color: rgba(30, 41, 59, 0.6) !important;
-                border: 1px solid rgba(255, 255, 255, 0.05) !important;
-            }}
-            .metric-card {{
-                background: rgba(255, 255, 255, 0.03) !important;
-            }}
-            h1, h2, h3, h4 {{
-                color: var(--primary-theme) !important;
-            }}
-        }}
-        
         hr {{
             opacity: 0.1;
         }}
