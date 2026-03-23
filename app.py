@@ -10,7 +10,7 @@ database.init_db()
 st.set_page_config(page_title="Training Record Webapp", page_icon="📝", layout="wide")
 
 def inject_custom_css():
-    # 현재 모드에 따른 테마 색상 설정
+    # 현재 모드에 따른 테마 색상 설정 (버튼용 포인트 컬러)
     theme_color = "#334155" # Default
     if st.session_state.get("mode") == "overseas":
         theme_color = "#0284c7" # Sky Blue
@@ -19,47 +19,75 @@ def inject_custom_css():
 
     st.markdown(f"""
         <style>
-        /* 🎨 CSS Variables for Theme Awareness */
-        :root {{
+        /* 🎨 Force Global Light Theme Regardless of User's OS / Streamlit Settings */
+        :root, html, body, .stApp, [data-theme="dark"] {{
             --primary-theme: {theme_color};
-            --primary-theme-rgb: 2, 132, 199;
+            background-color: #f8fafc !important; /* 강제 밝은 바탕 */
+            color: #0f172a !important; /* 강제 어두운 글자 */
         }}
 
         /* 📱 Base App Styling */
         .stApp {{
             font-family: 'Pretendard', 'Inter', -apple-system, sans-serif;
-            transition: all 0.3s ease;
         }}
         
-        /* 🌓 Responsive Headers */
+        /* 🌓 Force Text Colors in All Streamlit Elements */
         h1, h2, h3, h4 {{
-            color: var(--primary-theme) !important;
+            color: {theme_color} !important;
             font-weight: 800 !important;
             letter-spacing: -0.02em;
             margin-bottom: 1rem !important;
         }}
+        p, span, label, div, [data-testid="stWidgetLabel"] p, .stMarkdown p {{
+            color: #1e293b !important;
+        }}
 
-        /* 💡 Glassmorphism Component Card Styling (Works flawlessly in Light/Dark) */
+        /* 💡 Metric Cards & Container Boxes */
         div[data-testid="column"], [data-testid="stVerticalBlock"] > div:has(div.metric-card) {{
-            background-color: rgba(128, 128, 128, 0.05); /* Transparent grey automatically adapts to light/dark */
+            background-color: #ffffff !important;
             padding: 2rem;
             border-radius: 1.25rem;
-            border: 1px solid rgba(128, 128, 128, 0.1);
-            backdrop-filter: blur(12px);
-            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 4px 15px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
         }}
         
         div[data-testid="column"]:hover {{
             transform: translateY(-4px);
-            box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.1);
-            border-color: var(--primary-theme);
+            box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.1);
+            border-color: {theme_color} !important;
         }}
 
-        /* 🔵 Primary Buttons (Including Form Submit) */
+        .metric-card {{
+            background-color: #f1f5f9 !important;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border-left: 6px solid {theme_color};
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }}
+        .metric-card:hover {{
+            transform: translateX(5px);
+            background-color: #e2e8f0 !important;
+        }}
+
+        /* 🖋️ Force Input Fields to be Light Theme */
+        .stTextInput input, .stTextArea textarea, .stSelectbox [data-baseweb="select"], div[data-baseweb="select"] > div {{
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            border-radius: 0.75rem !important;
+            border: 1px solid #cbd5e1 !important;
+        }}
+        .stTextInput input:focus, .stTextArea textarea:focus {{
+            border-color: {theme_color} !important;
+            box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
+        }}
+
+        /* 🔵 Primary Buttons */
         button[kind="primary"], button[kind="primaryFormSubmit"] {{
-            background: linear-gradient(135deg, var(--primary-theme) 0%, var(--primary-theme) 100%) !important;
-            color: white !important;
+            background: linear-gradient(135deg, {theme_color} 0%, {theme_color} 100%) !important;
+            color: #ffffff !important;
             border: none !important;
             border-radius: 0.75rem !important;
             font-weight: 700 !important;
@@ -73,42 +101,26 @@ def inject_custom_css():
             filter: brightness(1.1);
         }}
         
-        /* 🟢 Secondary Buttons (Including Form Submit) */
+        /* 🟢 Secondary Buttons */
         button[kind="secondary"], button[kind="secondaryFormSubmit"] {{
-            background: rgba(128, 128, 128, 0.1) !important;
-            color: var(--text-color) !important;
-            border: 1px solid rgba(128, 128, 128, 0.2) !important;
+            background-color: #f1f5f9 !important;
+            color: #334155 !important;
+            border: 1px solid #cbd5e1 !important;
             border-radius: 0.75rem !important;
             font-weight: 700 !important;
             padding: 0.6rem 1.2rem !important;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             transition: all 0.2s ease !important;
         }}
         button[kind="secondary"]:hover, button[kind="secondaryFormSubmit"]:hover {{
-            background: var(--primary-theme) !important;
-            color: white !important;
+            background-color: {theme_color} !important;
+            color: #ffffff !important;
+            border-color: {theme_color} !important;
             transform: translateY(-2px) !important;
-            box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.2) !important;
-        }}
-
-        /* Dashboard Metric Cards */
-        .metric-card {{
-            background: rgba(128, 128, 128, 0.05); /* Adaptive background */
-            padding: 1.5rem;
-            border-radius: 1rem;
-            border-left: 6px solid var(--primary-theme);
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-        }}
-        .metric-card:hover {{
-            transform: translateX(5px);
-            background: rgba(128, 128, 128, 0.1);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }}
 
         hr {{
-            opacity: 0.1;
+            border-color: #e2e8f0 !important;
+            opacity: 1 !important;
         }}
         </style>
     """, unsafe_allow_html=True)
