@@ -12,87 +12,133 @@ st.set_page_config(page_title="Training Record Webapp", page_icon="📝", layout
 def inject_custom_css():
     # 현재 모드에 따른 테마 색상 설정
     theme_color = "#334155" # Default
-    bg_gradient = "linear-gradient(to right, #f8fafc, #f1f5f9)"
     if st.session_state.get("mode") == "overseas":
         theme_color = "#0284c7" # Sky Blue
-        bg_gradient = "linear-gradient(to right, #f0f9ff, #e0f2fe)"
     elif st.session_state.get("mode") == "domestic":
         theme_color = "#10b981" # Emerald Green
-        bg_gradient = "linear-gradient(to right, #f0fdf4, #dcfce7)"
 
     st.markdown(f"""
         <style>
-        /* Base App Styling */
+        /* 🎨 CSS Variables for Theme Awareness */
+        :root {{
+            --primary-theme: {theme_color};
+            --text-main: inherit;
+        }}
+
+        /* 📱 Base App Styling */
         .stApp {{
-            background: {bg_gradient};
-            color: #1e293b;
-            font-family: 'Pretendard', 'Inter', sans-serif;
-        }}
-        
-        /* Headers */
-        h1, h2, h3 {{
-            color: {theme_color};
-            font-weight: 800 !important;
-            letter-spacing: -0.5px;
-        }}
-        
-        /* 💡 Mode Selection Card Styling */
-        div[data-testid="column"] {{
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 2rem;
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(10px);
+            font-family: 'Pretendard', 'Inter', -apple-system, sans-serif;
             transition: all 0.3s ease;
-            text-align: center;
-        }}
-        div[data-testid="column"]:hover {{
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }}
         
-        /* 🔵 Primary Button (Overseas / Admin) */
+        /* 🌓 Light/Dark Mode Responsive Headers & Text */
+        h1, h2, h3, h4 {{
+            color: var(--primary-theme) !important;
+            font-weight: 800 !important;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem !important;
+        }}
+
+        /* 💡 Mode Selection & Component Card Styling */
+        div[data-testid="column"], [data-testid="stVerticalBlock"] > div:has(div.metric-card) {{
+            background-color: var(--background-secondary-color, rgba(255, 255, 255, 0.7));
+            padding: 2rem;
+            border-radius: 1.25rem;
+            border: 1px solid rgba(128, 128, 128, 0.1);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }}
+        
+        div[data-testid="column"]:hover {{
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-theme);
+        }}
+
+        /* 🖋️ Fix for Input Labels and Descriptions in Dark Mode */
+        [data-testid="stWidgetLabel"] p, label p, .stMarkdown p, .stCaption p {{
+            color: inherit !important;
+            font-weight: 500 !important;
+            opacity: 1 !important;
+        }}
+        
+        /* Input Field Enhancements */
+        .stTextInput input, .stTextArea textarea, .stSelectbox [data-baseweb="select"] {{
+            border-radius: 0.75rem !important;
+            border: 1px solid rgba(128, 128, 128, 0.2) !important;
+            transition: all 0.2s ease;
+        }}
+        .stTextInput input:focus {{
+            border-color: var(--primary-theme) !important;
+            box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
+        }}
+
+        /* 🔵 Primary Buttons */
         button[kind="primary"] {{
-            background-color: #0284c7 !important;
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
             color: white !important;
             border: none !important;
             border-radius: 0.75rem !important;
             font-weight: 700 !important;
-            padding: 0.75rem 1.5rem !important;
-            transition: all 0.2s ease;
+            padding: 0.6rem 1.2rem !important;
+            box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.3);
+            transition: all 0.2s ease !important;
         }}
         button[kind="primary"]:hover {{
-            background-color: #0369a1 !important;
-            transform: scale(1.02);
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 12px -2px rgba(2, 132, 199, 0.4) !important;
         }}
         
-        /* 🟢 Secondary Button (Domestic) */
+        /* 🟢 Secondary Buttons */
         button[kind="secondary"] {{
-            background-color: #10b981 !important;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
             color: white !important;
             border: none !important;
             border-radius: 0.75rem !important;
             font-weight: 700 !important;
-            padding: 0.75rem 1.5rem !important;
-            transition: all 0.2s ease;
+            padding: 0.6rem 1.2rem !important;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+            transition: all 0.2s ease !important;
         }}
         button[kind="secondary"]:hover {{
-            background-color: #059669 !important;
-            transform: scale(1.02);
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 12px -2px rgba(16, 185, 129, 0.4) !important;
         }}
-        
+
         /* Dashboard Metric Cards */
         .metric-card {{
-            background: white;
+            background: rgba(255, 255, 255, 0.05);
             padding: 1.5rem;
             border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-            border-left: 5px solid {theme_color};
+            border-left: 6px solid var(--primary-theme);
             margin-bottom: 1rem;
+            transition: all 0.3s ease;
         }}
+        .metric-card:hover {{
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.08);
+        }}
+
+        /* Dark Mode Specific Adjustments */
+        @media (prefers-color-scheme: dark) {{
+            :root {{
+                --primary-theme: {theme_color if st.session_state.get("mode") else "#cbd5e1"};
+            }}
+            div[data-testid="column"] {{
+                background-color: rgba(30, 41, 59, 0.6) !important;
+                border: 1px solid rgba(255, 255, 255, 0.05) !important;
+            }}
+            .metric-card {{
+                background: rgba(255, 255, 255, 0.03) !important;
+            }}
+            h1, h2, h3, h4 {{
+                color: var(--primary-theme) !important;
+            }}
+        }}
+        
         hr {{
-            border-color: #cbd5e1;
+            opacity: 0.1;
         }}
         </style>
     """, unsafe_allow_html=True)
@@ -107,21 +153,21 @@ def reset_to_main():
 
 def show_mode_selection():
     st.markdown("<br><br><br>", unsafe_allow_html=True)
-    st.markdown("<h1 style='text-align: center; color: #1e293b; font-size: 3rem;'>Training Record System</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #64748b; font-size: 1.2rem; margin-bottom: 3rem;'>Please select your operating mode to continue</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; font-size: 3rem;'>Training Record System</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; opacity: 0.8; font-size: 1.2rem; margin-bottom: 3rem;'>Please select your operating mode to continue</p>", unsafe_allow_html=True)
     
     col1, col2, col3, col4 = st.columns([1, 4, 4, 1])
     
     with col2:
         st.markdown("<h3>🌍 Overseas Mode</h3>", unsafe_allow_html=True)
-        st.markdown("<p style='color: #64748b; margin-bottom: 2rem;'>Manage records and sessions for international training programs.</p>", unsafe_allow_html=True)
+        st.markdown("<p style='opacity: 0.8; margin-bottom: 2rem;'>Manage records and sessions for international training programs.</p>", unsafe_allow_html=True)
         if st.button("Access Overseas ➔", use_container_width=True, type="primary"):
             st.session_state.mode = "overseas"
             st.rerun()
             
     with col3:
         st.markdown("<h3>🏢 Domestic Mode</h3>", unsafe_allow_html=True)
-        st.markdown("<p style='color: #64748b; margin-bottom: 2rem;'>Manage records and sessions for local domestic training programs.</p>", unsafe_allow_html=True)
+        st.markdown("<p style='opacity: 0.8; margin-bottom: 2rem;'>Manage records and sessions for local domestic training programs.</p>", unsafe_allow_html=True)
         if st.button("Access Domestic ➔", use_container_width=True, type="secondary"):
             st.session_state.mode = "domestic"
             st.rerun()
@@ -129,21 +175,21 @@ def show_mode_selection():
 def show_main():
     mode_str = "🌍 Overseas" if st.session_state.mode == "overseas" else "🏢 Domestic"
     st.markdown(f"<h2>{mode_str} Dashboard</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #64748b; margin-bottom: 2rem;'>Choose a module to start managing training records.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='opacity: 0.8; margin-bottom: 2rem;'>Choose a module to start managing training records.</p>", unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.markdown("<div class='metric-card'><h4>⚙️ Admin Panel</h4><p style='color:#64748b; font-size:0.9rem;'>Manage subjects & courses</p></div>", unsafe_allow_html=True)
+        st.markdown("<div class='metric-card'><h4>⚙️ Admin Panel</h4><p style='opacity:0.8; font-size:0.9rem;'>Manage subjects & courses</p></div>", unsafe_allow_html=True)
         if st.button("Open Admin", use_container_width=True):
             st.session_state.page = "admin"
             st.rerun()
     with col2:
-        st.markdown("<div class='metric-card'><h4>👨‍🎓 Trainee Mode</h4><p style='color:#64748b; font-size:0.9rem;'>Add trainee signatures</p></div>", unsafe_allow_html=True)
+        st.markdown("<div class='metric-card'><h4>👨‍🎓 Trainee Mode</h4><p style='opacity:0.8; font-size:0.9rem;'>Add trainee signatures</p></div>", unsafe_allow_html=True)
         if st.button("Open Trainee", use_container_width=True):
             st.session_state.page = "trainee"
             st.rerun()
     with col3:
-        st.markdown("<div class='metric-card'><h4>👨‍🏫 Instructor Mode</h4><p style='color:#64748b; font-size:0.9rem;'>Close sessions & reports</p></div>", unsafe_allow_html=True)
+        st.markdown("<div class='metric-card'><h4>👨‍🏫 Instructor Mode</h4><p style='opacity:0.8; font-size:0.9rem;'>Close sessions & reports</p></div>", unsafe_allow_html=True)
         if st.button("Open Instructor", use_container_width=True):
             st.session_state.page = "instructor"
             st.rerun()
