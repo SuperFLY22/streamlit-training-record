@@ -19,61 +19,72 @@ def inject_custom_css():
 
     st.markdown(f"""
         <style>
-        /* 🎨 Force Global Light Theme Regardless of User's OS / Streamlit Settings */
-        :root, html, body, .stApp, [data-theme="dark"] {{
-            --primary-theme: {theme_color};
-            background-color: #f8fafc !important; /* 강제 밝은 바탕 */
-            color: #0f172a !important; /* 강제 어두운 글자 */
+        /* 🚨 1. OVERRIDE STREAMLIT NATIVE THEME VARIABLES GLOBALLY */
+        /* 이 코드는 사용자가 설정에서 'Dark'를 눌러도 모든 변수를 무력화시킵니다 */
+        html, body, [class*="st-"], * {{
+            --text-color: #0f172a !important;
+            --background-color: #f8fafc !important;
+            --secondary-background-color: #ffffff !important;
+            --primary-color: {theme_color} !important;
+            --text-color-light: #64748b !important;
+            --font: 'Pretendard', 'Inter', -apple-system, sans-serif !important;
         }}
 
-        /* 📱 Base App Styling */
-        .stApp {{
-            font-family: 'Pretendard', 'Inter', -apple-system, sans-serif;
+        /* 📱 2. Base App Styling */
+        .stApp, .stApp > header {{
+            background-color: #f8fafc !important;
+            color: #0f172a !important;
         }}
         
-        /* 🌓 Force Text Colors in All Streamlit Elements */
+        /* 🌓 3. Force Text Colors in All Text Elements */
         h1, h2, h3, h4 {{
             color: {theme_color} !important;
             font-weight: 800 !important;
             letter-spacing: -0.02em;
             margin-bottom: 1rem !important;
         }}
-        p, span, label, div, [data-testid="stWidgetLabel"] p, .stMarkdown p {{
-            color: #1e293b !important;
+
+        /* 명시적으로 텍스트 컬러 강제 지정 (BaseWeb 요소 지원) */
+        p, span, label, [data-testid="stWidgetLabel"] p, .stMarkdown p {{
+            color: #0f172a !important;
         }}
 
-        /* 💡 Metric Cards & Container Boxes */
+        /* 💡 4. Metric Cards & Container Boxes */
         div[data-testid="column"], [data-testid="stVerticalBlock"] > div:has(div.metric-card) {{
             background-color: #ffffff !important;
             padding: 2rem;
             border-radius: 1.25rem;
             border: 1px solid #e2e8f0 !important;
-            box-shadow: 0 4px 15px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 15px -2px rgba(0, 0, 0, 0.05) !important;
             transition: all 0.3s ease;
         }}
         
         div[data-testid="column"]:hover {{
             transform: translateY(-4px);
-            box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.1) !important;
             border-color: {theme_color} !important;
         }}
 
         .metric-card {{
-            background-color: #f1f5f9 !important;
+            background-color: #ffffff !important;
             padding: 1.5rem;
             border-radius: 1rem;
-            border-left: 6px solid {theme_color};
+            border-left: 6px solid {theme_color} !important;
             margin-bottom: 1rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+            border: 1px solid #e2e8f0 !important;
             transition: all 0.3s ease;
         }}
         .metric-card:hover {{
             transform: translateX(5px);
-            background-color: #e2e8f0 !important;
+            background-color: #f1f5f9 !important;
         }}
 
-        /* 🖋️ Force Input Fields to be Light Theme */
-        .stTextInput input, .stTextArea textarea, .stSelectbox [data-baseweb="select"], div[data-baseweb="select"] > div {{
+        /* 🖋️ 5. Force Input Fields to be Light Theme */
+        /* Streamlit Input & BaseWeb Selectbox 텍스트/배경색 고정 */
+        .stTextInput input, .stTextArea textarea, 
+        .stSelectbox div[data-baseweb="select"], 
+        .stSelectbox div[data-baseweb="select"] > div {{
             background-color: #ffffff !important;
             color: #0f172a !important;
             border-radius: 0.75rem !important;
@@ -84,7 +95,7 @@ def inject_custom_css():
             box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
         }}
 
-        /* 🔵 Primary Buttons */
+        /* 🔵 6. Primary Buttons */
         button[kind="primary"], button[kind="primaryFormSubmit"] {{
             background: linear-gradient(135deg, {theme_color} 0%, {theme_color} 100%) !important;
             color: #ffffff !important;
@@ -92,16 +103,16 @@ def inject_custom_css():
             border-radius: 0.75rem !important;
             font-weight: 700 !important;
             padding: 0.6rem 1.2rem !important;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2) !important;
             transition: all 0.2s ease !important;
         }}
         button[kind="primary"]:hover, button[kind="primaryFormSubmit"]:hover {{
             transform: translateY(-2px) !important;
             box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.3) !important;
-            filter: brightness(1.1);
+            filter: brightness(1.1) !important;
         }}
         
-        /* 🟢 Secondary Buttons */
+        /* 🟢 7. Secondary Buttons */
         button[kind="secondary"], button[kind="secondaryFormSubmit"] {{
             background-color: #f1f5f9 !important;
             color: #334155 !important;
