@@ -17,136 +17,93 @@ def inject_custom_css():
     elif st.session_state.get("mode") == "domestic":
         theme_color = "#10b981"
 
+    # ✅ 핵심 원칙:
+    # 1) 배경색/텍스트색은 절대 건드리지 않음 → Streamlit 엔진(라이트/다크)이 각 모드에 맞게 자동 처리
+    # 2) CSS는 오직 버튼 색상, 보더, 그림자, 포인트 컬러 같은 "디자인 장식"만 담당
     st.markdown(f"""
         <style>
-        /* =========================================================
-           🔒 LIGHT MODE LOCK — 다크 모드 완전 차단
-           사용자가 수동으로 Dark를 선택해도 무력화
-           ========================================================= */
-
-        /* 1) 앱 전체 배경을 항상 밝은색으로 고정 */
-        .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {{
-            background-color: #f8fafc !important;
+        /* 📱 폰트 및 기본 여백 */
+        html, body, .stApp {{
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
         }}
 
-        /* 2) 다크 모드 data attribute가 붙어도 배경+텍스트 강제 덮어씌우기 */
-        [data-theme="dark"] .stApp,
-        [data-theme="dark"] [data-testid="stAppViewContainer"] {{
-            background-color: #f8fafc !important;
-            color: #0f172a !important;
-        }}
-
-        /* 3) 다크 모드에서 모든 텍스트 요소 강제 어둡게 */
-        [data-theme="dark"] p,
-        [data-theme="dark"] span,
-        [data-theme="dark"] label,
-        [data-theme="dark"] div,
-        [data-theme="dark"] [data-testid="stWidgetLabel"],
-        [data-theme="dark"] [data-testid="stWidgetLabel"] p,
-        [data-theme="dark"] [data-testid="stMarkdownContainer"] p {{
-            color: #0f172a !important;
-        }}
-
-        /* 4) 다크 모드에서 입력 필드도 라이트 스타일 유지 */
-        [data-theme="dark"] .stTextInput input,
-        [data-theme="dark"] .stTextArea textarea,
-        [data-theme="dark"] .stSelectbox [data-baseweb="select"] {{
-            background-color: #ffffff !important;
-            color: #0f172a !important;
-            border: 1px solid #cbd5e1 !important;
-        }}
-
-        /* 5) 사이드바 및 폼 배경도 고정 */
-        [data-theme="dark"] section[data-testid="stSidebar"],
-        [data-theme="dark"] [data-testid="stForm"] {{
-            background-color: #f1f5f9 !important;
-        }}
-
-        /* 🎨 포인트 컬러 변수 */
-        :root {{ --accent: {theme_color}; }}
-
-        /* 📱 폰트 */
-        .stApp {{
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }}
-
-        /* 🔤 헤더 색상 - 포인트 컬러로만 지정 */
+        /* 🔤 헤더: 모드 포인트 컬러 적용 */
         h1, h2, h3, h4 {{
             color: {theme_color} !important;
             font-weight: 800 !important;
             letter-spacing: -0.02em;
         }}
 
-        /* 💡 카드 레이아웃 - 보더/쉐도우만, 색상은 Streamlit 위임 */
+        /* 💡 카드 레이아웃 스타일링 (보더와 그림자만 추가) */
         div[data-testid="column"] {{
             border-radius: 1.25rem !important;
-            border: 1px solid rgba(128,128,128,0.15) !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+            border: 1px solid rgba(128,128,128,0.1) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
             transition: all 0.3s ease !important;
         }}
         div[data-testid="column"]:hover {{
             transform: translateY(-4px) !important;
-            border-color: {theme_color} !important;
-            box-shadow: 0 10px 24px rgba(0,0,0,0.1) !important;
+            border-color: {theme_color}33 !important;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1) !important;
         }}
 
-        /* 메트릭 카드 */
+        /* 사이드바/폼 섹션 둥글게 */
+        [data-testid="stForm"] {{
+            border-radius: 1rem !important;
+            border: 1px solid rgba(128,128,128,0.1) !important;
+            padding: 2rem !important;
+        }}
+
+        /* 메트릭 카드: 심플 디자인 */
         .metric-card {{
             border-radius: 1rem;
             border-left: 6px solid {theme_color} !important;
-            border: 1px solid rgba(128,128,128,0.15);
-            padding: 1.5rem;
+            padding: 1.2rem;
             margin-bottom: 1rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
+            background: rgba(128,128,128,0.03);
+            transition: transform 0.2s ease;
         }}
-        .metric-card:hover {{
-            transform: translateX(5px);
-        }}
+        .metric-card:hover {{ transform: scale(1.01); }}
 
-        /* 🖋️ 입력 필드 - border-radius만 추가, 색상은 건드리지 않음 */
-        .stTextInput input, .stTextArea textarea {{
+        /* 🖋️ 입력 필드 테두리 반경 */
+        .stTextInput input, .stTextArea textarea, .stSelectbox [data-baseweb="select"] {{
             border-radius: 0.75rem !important;
-            transition: border-color 0.2s ease !important;
         }}
         .stTextInput input:focus, .stTextArea textarea:focus {{
             border-color: {theme_color} !important;
-            box-shadow: 0 0 0 2px {theme_color}33 !important;
         }}
 
-        /* 🔵 Primary 버튼 - 배경/글자색 지정 (버튼은 항상 색상 고정이 맞음) */
+        /* 🔵 Primary 버튼 (모드 불문 포인트 배경 + 흰색 글자 고정) */
         button[kind="primary"], button[kind="primaryFormSubmit"] {{
             background: {theme_color} !important;
             color: #ffffff !important;
             border: none !important;
             border-radius: 0.75rem !important;
             font-weight: 700 !important;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.15) !important;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
             transition: all 0.2s ease !important;
         }}
         button[kind="primary"]:hover, button[kind="primaryFormSubmit"]:hover {{
             transform: translateY(-2px) !important;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.25) !important;
-            filter: brightness(1.08) !important;
+            filter: brightness(1.1) !important;
+            box-shadow: 0 6px 10px rgba(0,0,0,0.2) !important;
         }}
 
-        /* 🟢 Secondary 버튼 - 배경/글자색 지정 */
+        /* 🟢 Secondary 버튼: Hover 전까지는 일반 디자인 유지 */
         button[kind="secondary"], button[kind="secondaryFormSubmit"] {{
             border-radius: 0.75rem !important;
             font-weight: 600 !important;
-            transition: all 0.2s ease !important;
         }}
         button[kind="secondary"]:hover, button[kind="secondaryFormSubmit"]:hover {{
             background: {theme_color} !important;
             color: #ffffff !important;
             border-color: {theme_color} !important;
-            transform: translateY(-2px) !important;
+            transform: translateY(-1px) !important;
         }}
 
-        hr {{ opacity: 0.2; }}
+        hr {{ opacity: 0.15; }}
         </style>
     """, unsafe_allow_html=True)
-
 
 if "mode" not in st.session_state:
     st.session_state.mode = None
@@ -184,7 +141,7 @@ def show_main():
     
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.markdown("<div class='metric-card'><h4>⚙️ Admin Panel</h4><p style='opacity:0.8; font-size:0.9rem;'>Manage subjects & courses</p></div>", unsafe_allow_html=True)
+        st.markdown("<div class='metric-card'><h4>⚙️ Admin Panel</h4><p style='opacity:0.8; font-size:0.9rem;'>Manage subjects &amp; courses</p></div>", unsafe_allow_html=True)
         if st.button("Open Admin", use_container_width=True):
             st.session_state.page = "admin"
             st.rerun()
@@ -194,7 +151,7 @@ def show_main():
             st.session_state.page = "trainee"
             st.rerun()
     with col3:
-        st.markdown("<div class='metric-card'><h4>👨‍🏫 Instructor Mode</h4><p style='opacity:0.8; font-size:0.9rem;'>Close sessions & reports</p></div>", unsafe_allow_html=True)
+        st.markdown("<div class='metric-card'><h4>👨‍🏫 Instructor Mode</h4><p style='opacity:0.8; font-size:0.9rem;'>Close sessions &amp; reports</p></div>", unsafe_allow_html=True)
         if st.button("Open Instructor", use_container_width=True):
             st.session_state.page = "instructor"
             st.rerun()
@@ -349,7 +306,6 @@ def show_instructor():
             
             del_id = st.selectbox("Select Trainee to Remove", [t['employee_id'] for t in trainees], format_func=lambda x: next((t['name'] for t in trainees if t['employee_id']==x), ""), index=None)
             if st.button("Delete Selected Trainee") and del_id:
-                # Firestore의 delete_trainee 함수에 맞게 파라미터 전달
                 database.delete_trainee(st.session_state.mode, sel_crs, del_id)
                 st.rerun()
         else:
