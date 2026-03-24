@@ -111,6 +111,10 @@ if "page" not in st.session_state:
     st.session_state.page = "main"
 
 def reset_to_main():
+    # 로그아웃(인증 초기화) 방어 코드
+    keys_to_clear = [k for k in st.session_state.keys() if "auth" in k]
+    for k in keys_to_clear:
+        st.session_state.pop(k) # 키 자체를 제거하여 완전 초기화
     st.session_state.page = "main"
 
 def show_mode_selection():
@@ -165,6 +169,10 @@ def show_admin():
     st.button("🔙 Back", on_click=reset_to_main)
     st.header("Admin Panel")
     
+    if "flash_msg" in st.session_state:
+        st.success(st.session_state["flash_msg"])
+        del st.session_state["flash_msg"]
+    
     if "admin_auth" not in st.session_state:
         st.session_state.admin_auth = False
         
@@ -188,20 +196,24 @@ def show_admin():
             sel_sub = st.selectbox("Select subject to delete", [s['name'] for s in subs], index=None)
             if st.button("Delete Subject") and sel_sub:
                 database.delete_subject(st.session_state.mode, sel_sub)
-                st.success("Deleted!")
+                st.session_state["flash_msg"] = "Subject Deleted!"
                 st.rerun()
         else:
             st.info("No subjects found.")
             
         st.markdown("---")
-        with st.form("add_sub_form"):
+        fk_sub = st.session_state.get("fk_sub", 0)
+        with st.form(f"add_sub_form_{fk_sub}"):
             new_sub = st.text_input("New Subject Name")
             new_cont = st.text_area("Subject Content")
             if st.form_submit_button("Add Subject"):
                 if new_sub and new_cont:
                     database.add_subject(st.session_state.mode, new_sub, new_cont)
-                    st.success("Subject Added!")
+                    st.session_state["flash_msg"] = "Subject Added successfully!"
+                    st.session_state["fk_sub"] = fk_sub + 1
                     st.rerun()
+                else:
+                    st.error("Please fill all fields.")
                     
     with tab2:
         st.subheader("Manage Courses")
@@ -211,7 +223,7 @@ def show_admin():
             sel_crs = st.selectbox("Select course to delete", [c['name'] for c in courses], index=None)
             if st.button("Delete Course") and sel_crs:
                 database.delete_course(st.session_state.mode, sel_crs)
-                st.success("Deleted!")
+                st.session_state["flash_msg"] = "Course Deleted!"
                 st.rerun()
         else:
             st.info("No courses found.")
@@ -219,21 +231,74 @@ def show_admin():
         st.markdown("---")
         subs = database.get_subjects(st.session_state.mode)
         sub_names = [s['name'] for s in subs]
-        with st.form("add_crs_form"):
+        fk_crs = st.session_state.get("fk_crs", 0)
+        with st.form(f"add_crs_form_{fk_crs}"):
             c_name = st.text_input("Course Name")
             c_pwd = st.text_input("Instructor Password", type="password")
             c_time = st.text_input("Course Time (e.g. 2H)")
             c_sub = st.selectbox("Subject", sub_names)
             c_tpwd = st.text_input("Trainee Password", type="password")
             if st.form_submit_button("Add Course"):
-                if c_name and c_pwd and c_time and c_sub:
+                if c_name and c_pwd and c_time and c_sub and c_tpwd:
                     database.add_course(st.session_state.mode, c_name, c_pwd, c_time, c_sub, c_tpwd)
-                    st.success("Course Added!")
+                    st.session_state["flash_msg"] = "Course Added successfully!"
+                    st.session_state["fk_crs"] = fk_crs + 1
                     st.rerun()
+                else:
+                    st.error("Please fill all fields.")
+
+        # ==========================================================
+        # 📂 추가된 기능: 완료된 교육(Course)의 템플릿(보고서) 다운로드 영역
+        # ==========================================================
+        st.markdown("---")
+        st.subheader("📥 Download Completed Reports")
+        if courses:
+            submitted_courses = [c for c in courses if c.get('submitted', False)]
+            if submitted_courses:
+                dl_crs = st.selectbox("Select completed course to download", [c['name'] for c in submitted_courses], key="admin_dl_crs")
+                if dl_crs:
+                    c_info = next(c for c in courses if c['name'] == dl_crs)
+                    sess = database.get_instructor_session(st.session_state.mode, dl_crs)
+                    trainees = database.get_trainees(st.session_state.mode, dl_crs)
+                    sub_content = next((s['content'] for s in subs if s['name'] == c_info['subject_name']), "")
+                    
+                    if sess:
+                        inst_info = {
+                            "company": sess['company'],
+                            "instructor_id": sess['instructor_id'],
+                            "name": sess['name'],
+                            "location": sess['location'],
+                            "course_name": dl_crs,
+                            "signature": sess['signature']
+                        }
+                        try:
+                            excel_bytes = export.generate_excel_bytes(
+                                subject_name=c_info['subject_name'],
+                                subject_content=sub_content,
+                                course_time=c_info['time'],
+                                lecture_date=sess['lecture_date'],
+                                submitted_date=sess['submitted_date'],
+                                instructor_info=inst_info,
+                                trainees=trainees
+                            )
+                            st.download_button(
+                                label="📄 Download XLSX", data=excel_bytes,
+                                file_name=f"{dl_crs}_TrainingRecord.xlsx",
+                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                type="primary"
+                            )
+                        except Exception as e:
+                            st.error(f"Error generating Excel: {e}")
+            else:
+                st.info("No courses have been submitted yet. Once instructors submit their course reports, you can download them here.")
 
 def show_trainee():
     st.button("🔙 Back", on_click=reset_to_main)
     st.header("Trainee Mode")
+    
+    if "flash_msg" in st.session_state:
+        st.success(st.session_state["flash_msg"])
+        del st.session_state["flash_msg"]
     
     courses = database.get_courses(st.session_state.mode)
     course_opts = {c['name']: c for c in courses}
@@ -255,17 +320,22 @@ def show_trainee():
             return
             
         st.subheader("Add Trainee Information")
-        with st.form("trainee_form"):
+        fk_t = st.session_state.get(f"fk_t_{sel_crs}", 0)
+        with st.form(f"trainee_form_{fk_t}"):
             t_team = st.text_input("Team Name")
             t_id = st.text_input("Employee ID")
             t_name = st.text_input("Name")
             st.write("Signature:")
             canvas_result = st_canvas(
                 stroke_width=2, stroke_color="#000000", background_color="#ffffff",
-                height=150, width=400, drawing_mode="freedraw", key=f"canvas_t_{sel_crs}"
+                height=150, width=400, drawing_mode="freedraw", key=f"canvas_t_{sel_crs}_{fk_t}",
+                display_toolbar=False
             )
             if st.form_submit_button("Submit"):
-                if t_team and t_id and t_name and canvas_result.image_data is not None:
+                valid_sig = canvas_result.json_data is not None and len(canvas_result.json_data.get("objects", [])) > 0
+                if not (t_team and t_id and t_name and valid_sig):
+                    st.error("🚫 Please fill all text fields and provide your signature.")
+                else:
                     import io, base64
                     from PIL import Image
                     img = Image.fromarray(canvas_result.image_data.astype('uint8'), 'RGBA')
@@ -274,11 +344,17 @@ def show_trainee():
                     b64_str = base64.b64encode(buffer.getvalue()).decode()
                     
                     database.add_trainee(st.session_state.mode, sel_crs, t_team, t_id, t_name, b64_str)
-                    st.success("Trainee Added successfully!")
+                    st.session_state["flash_msg"] = "✅ Trainee Added successfully!"
+                    st.session_state[f"fk_t_{sel_crs}"] = fk_t + 1
+                    st.rerun()
 
 def show_instructor():
     st.button("🔙 Back", on_click=reset_to_main)
     st.header("Instructor Mode")
+
+    if "flash_msg" in st.session_state:
+        st.success(st.session_state["flash_msg"])
+        del st.session_state["flash_msg"]
 
     courses = database.get_courses(st.session_state.mode)
     course_opts = {c['name']: c for c in courses}
@@ -302,7 +378,9 @@ def show_instructor():
         st.subheader("Current Trainees")
         trainees = database.get_trainees(st.session_state.mode, sel_crs)
         if trainees:
-            st.dataframe(pd.DataFrame(trainees)[['team', 'employee_id', 'name']], use_container_width=True)
+            df = pd.DataFrame(trainees)[['team', 'employee_id', 'name']]
+            df.index = df.index + 1  # 인덱스를 1부터 시작하도록 조작
+            st.dataframe(df, use_container_width=True)
             
             del_id = st.selectbox("Select Trainee to Remove", [t['employee_id'] for t in trainees], format_func=lambda x: next((t['name'] for t in trainees if t['employee_id']==x), ""), index=None)
             if st.button("Delete Selected Trainee") and del_id:
@@ -313,7 +391,8 @@ def show_instructor():
 
         st.markdown("---")
         st.subheader("Submit Session")
-        with st.form("inst_form"):
+        fk_i = st.session_state.get(f"fk_i_{sel_crs}", 0)
+        with st.form(f"inst_form_{fk_i}"):
             i_comp = st.text_input("Company")
             i_id = st.text_input("Instructor ID")
             i_name = st.text_input("Name")
@@ -324,11 +403,15 @@ def show_instructor():
             st.write("Instructor Signature:")
             canvas_inst = st_canvas(
                 stroke_width=2, stroke_color="#000000", background_color="#ffffff",
-                height=150, width=400, drawing_mode="freedraw", key=f"canvas_i_{sel_crs}"
+                height=150, width=400, drawing_mode="freedraw", key=f"canvas_i_{sel_crs}_{fk_i}",
+                display_toolbar=False
             )
             
             if st.form_submit_button("Submit & Generate Report"):
-                if i_comp and i_id and i_name and i_loc and l_date and s_date and canvas_inst.image_data is not None:
+                valid_sig = canvas_inst.json_data is not None and len(canvas_inst.json_data.get("objects", [])) > 0
+                if not (i_comp and i_id and i_name and i_loc and l_date and s_date and valid_sig):
+                    st.error("🚫 Please fill all required fields and provide your signature.")
+                else:
                     import io, base64
                     from PIL import Image
                     img = Image.fromarray(canvas_inst.image_data.astype('uint8'), 'RGBA')
@@ -338,10 +421,9 @@ def show_instructor():
                     
                     database.save_instructor_session(st.session_state.mode, sel_crs, i_comp, i_id, i_name, i_loc, l_date, s_date, b64_str)
                     database.submit_course(st.session_state.mode, sel_crs)
-                    st.success("Session Submitted Successfully!")
+                    st.session_state["flash_msg"] = "✅ Session Submitted Successfully!"
+                    st.session_state[f"fk_i_{sel_crs}"] = fk_i + 1
                     st.rerun()
-                else:
-                    st.error("Please fill all required fields and sign.")
 
         if c_info['submitted']:
             st.success("This course has been submitted.")
