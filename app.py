@@ -272,7 +272,7 @@ def show_admin():
                             "signature": sess['signature']
                         }
                         try:
-                            excel_bytes = export.generate_excel_bytes(
+                            excel_bytes, ext = export.generate_excel_or_zip(
                                 subject_name=c_info['subject_name'],
                                 subject_content=sub_content,
                                 course_time=c_info['time'],
@@ -281,10 +281,12 @@ def show_admin():
                                 instructor_info=inst_info,
                                 trainees=trainees
                             )
+                            file_name = f"{dl_crs}_TrainingRecord.{ext}"
+                            mime_type = "application/zip" if ext == "zip" else "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                             st.download_button(
-                                label="📄 Download XLSX", data=excel_bytes,
-                                file_name=f"{dl_crs}_TrainingRecord.xlsx",
-                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                label=f"📄 Download {ext.upper()}", data=excel_bytes,
+                                file_name=file_name,
+                                mime=mime_type,
                                 type="primary"
                             )
                         except Exception as e:
@@ -442,7 +444,7 @@ def show_instructor():
                 }
 
                 try:
-                    excel_bytes = export.generate_excel_bytes(
+                    excel_bytes, ext = export.generate_excel_or_zip(
                         subject_name=c_info['subject_name'],
                         subject_content=sub_content,
                         course_time=c_info['time'],
@@ -451,10 +453,12 @@ def show_instructor():
                         instructor_info=inst_info,
                         trainees=trainees
                     )
+                    file_name = f"{sel_crs}_TrainingRecord.{ext}"
+                    mime_type = "application/zip" if ext == "zip" else "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     st.download_button(
-                        label="📄 Download XLSX", data=excel_bytes,
-                        file_name=f"{sel_crs}_TrainingRecord.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        label=f"📄 Download {ext.upper()}", data=excel_bytes,
+                        file_name=file_name,
+                        mime=mime_type
                     )
                 except Exception as e:
                     st.error(f"Error generating Excel: {e}")
