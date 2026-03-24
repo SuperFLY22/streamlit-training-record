@@ -10,131 +10,102 @@ database.init_db()
 st.set_page_config(page_title="Training Record Webapp", page_icon="📝", layout="wide")
 
 def inject_custom_css():
-    # 현재 모드에 따른 테마 색상 설정 (버튼용 포인트 컬러)
-    theme_color = "#334155" # Default
+    # 현재 모드에 따른 포인트 색상 결정
+    theme_color = "#334155"
     if st.session_state.get("mode") == "overseas":
-        theme_color = "#0284c7" # Sky Blue
+        theme_color = "#0284c7"
     elif st.session_state.get("mode") == "domestic":
-        theme_color = "#10b981" # Emerald Green
+        theme_color = "#10b981"
 
     st.markdown(f"""
         <style>
-        /* 🚨 1. OVERRIDE STREAMLIT NATIVE THEME VARIABLES GLOBALLY */
-        /* 이 코드는 사용자가 설정에서 'Dark'를 눌러도 모든 변수를 무력화시킵니다 */
-        html, body, [class*="st-"], * {{
-            --text-color: #0f172a !important;
-            --background-color: #f8fafc !important;
-            --secondary-background-color: #ffffff !important;
-            --primary-color: {theme_color} !important;
-            --text-color-light: #64748b !important;
-            --font: 'Pretendard', 'Inter', -apple-system, sans-serif !important;
+        /* 🎨 포인트 컬러 변수 설정 */
+        :root {{
+            --accent: {theme_color};
         }}
 
-        /* 📱 2. Base App Styling */
-        .stApp, .stApp > header {{
-            background-color: #f8fafc !important;
-            color: #0f172a !important;
+        /* 📱 폰트만 지정 (색상은 Streamlit 자체 테마에 위임) */
+        .stApp {{
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }}
-        
-        /* 🌓 3. Force Text Colors in All Text Elements */
+
+        /* 🔤 헤더 색상 - 포인트 컬러로만 지정 */
         h1, h2, h3, h4 {{
             color: {theme_color} !important;
             font-weight: 800 !important;
             letter-spacing: -0.02em;
-            margin-bottom: 1rem !important;
         }}
 
-        /* 명시적으로 텍스트 컬러 강제 지정 (BaseWeb 요소 지원) */
-        p, span, label, [data-testid="stWidgetLabel"] p, .stMarkdown p {{
-            color: #0f172a !important;
+        /* 💡 카드 레이아웃 - 보더/쉐도우만, 색상은 Streamlit 위임 */
+        div[data-testid="column"] {{
+            border-radius: 1.25rem !important;
+            border: 1px solid rgba(128,128,128,0.15) !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+            transition: all 0.3s ease !important;
         }}
-
-        /* 💡 4. Metric Cards & Container Boxes */
-        div[data-testid="column"], [data-testid="stVerticalBlock"] > div:has(div.metric-card) {{
-            background-color: #ffffff !important;
-            padding: 2rem;
-            border-radius: 1.25rem;
-            border: 1px solid #e2e8f0 !important;
-            box-shadow: 0 4px 15px -2px rgba(0, 0, 0, 0.05) !important;
-            transition: all 0.3s ease;
-        }}
-        
         div[data-testid="column"]:hover {{
-            transform: translateY(-4px);
-            box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.1) !important;
+            transform: translateY(-4px) !important;
             border-color: {theme_color} !important;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.1) !important;
         }}
 
+        /* 메트릭 카드 */
         .metric-card {{
-            background-color: #ffffff !important;
-            padding: 1.5rem;
             border-radius: 1rem;
             border-left: 6px solid {theme_color} !important;
+            border: 1px solid rgba(128,128,128,0.15);
+            padding: 1.5rem;
             margin-bottom: 1rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
-            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             transition: all 0.3s ease;
         }}
         .metric-card:hover {{
             transform: translateX(5px);
-            background-color: #f1f5f9 !important;
         }}
 
-        /* 🖋️ 5. Force Input Fields to be Light Theme */
-        /* Streamlit Input & BaseWeb Selectbox 텍스트/배경색 고정 */
-        .stTextInput input, .stTextArea textarea, 
-        .stSelectbox div[data-baseweb="select"], 
-        .stSelectbox div[data-baseweb="select"] > div {{
-            background-color: #ffffff !important;
-            color: #0f172a !important;
+        /* 🖋️ 입력 필드 - border-radius만 추가, 색상은 건드리지 않음 */
+        .stTextInput input, .stTextArea textarea {{
             border-radius: 0.75rem !important;
-            border: 1px solid #cbd5e1 !important;
+            transition: border-color 0.2s ease !important;
         }}
         .stTextInput input:focus, .stTextArea textarea:focus {{
             border-color: {theme_color} !important;
-            box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
+            box-shadow: 0 0 0 2px {theme_color}33 !important;
         }}
 
-        /* 🔵 6. Primary Buttons */
+        /* 🔵 Primary 버튼 - 배경/글자색 지정 (버튼은 항상 색상 고정이 맞음) */
         button[kind="primary"], button[kind="primaryFormSubmit"] {{
-            background: linear-gradient(135deg, {theme_color} 0%, {theme_color} 100%) !important;
+            background: {theme_color} !important;
             color: #ffffff !important;
             border: none !important;
             border-radius: 0.75rem !important;
             font-weight: 700 !important;
-            padding: 0.6rem 1.2rem !important;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2) !important;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15) !important;
             transition: all 0.2s ease !important;
         }}
         button[kind="primary"]:hover, button[kind="primaryFormSubmit"]:hover {{
             transform: translateY(-2px) !important;
-            box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.3) !important;
-            filter: brightness(1.1) !important;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.25) !important;
+            filter: brightness(1.08) !important;
         }}
-        
-        /* 🟢 7. Secondary Buttons */
+
+        /* 🟢 Secondary 버튼 - 배경/글자색 지정 */
         button[kind="secondary"], button[kind="secondaryFormSubmit"] {{
-            background-color: #f1f5f9 !important;
-            color: #334155 !important;
-            border: 1px solid #cbd5e1 !important;
             border-radius: 0.75rem !important;
-            font-weight: 700 !important;
-            padding: 0.6rem 1.2rem !important;
+            font-weight: 600 !important;
             transition: all 0.2s ease !important;
         }}
         button[kind="secondary"]:hover, button[kind="secondaryFormSubmit"]:hover {{
-            background-color: {theme_color} !important;
+            background: {theme_color} !important;
             color: #ffffff !important;
             border-color: {theme_color} !important;
             transform: translateY(-2px) !important;
         }}
 
-        hr {{
-            border-color: #e2e8f0 !important;
-            opacity: 1 !important;
-        }}
+        hr {{ opacity: 0.2; }}
         </style>
     """, unsafe_allow_html=True)
+
 
 if "mode" not in st.session_state:
     st.session_state.mode = None
