@@ -49,10 +49,11 @@ def generate_excel_or_zip(subject_name, subject_content, course_time, lecture_da
             img_byte_arr.seek(0)
             
             xl_img = xlImage(img_byte_arr)
-            # 강사 서명 셀 크기: 너비 6cm(≈227px), 높이 맞춤(109px)
-            # xl_img.width/height를 직접 지정하면 원본 이미지 비율과 무관하게 셀에 딱 맞게 배치
-            xl_img.width = 227
-            xl_img.height = 109
+            # 강사 서명판 셀 크기 (I+J 병합)
+            # 너비: 열 너비 34.6 char × 7px = 242px
+            # 높이: 행 높이 40pt × (96/72) = 53px
+            xl_img.width = 242
+            xl_img.height = 53
             ws.add_image(xl_img, 'I27')
         
         row_start = 10
@@ -70,9 +71,10 @@ def generate_excel_or_zip(subject_name, subject_content, course_time, lecture_da
                 t_byte_arr.seek(0)
                 
                 t_xl_img = xlImage(t_byte_arr)
-                # 훈련생 서명 셀 크기: 너비 4cm(≈151px), 높이 맞춤(33px)
-                # xl_img.width/height를 직접 지정하면 원본 이미지 비율과 무관하게 셀에 딱 맞게 배치
-                t_xl_img.width = 151
+                # 훈련생 서명판 셀 크기 (H+I 병합)
+                # 너비: 열 너비 21.7 char × 7px = 152px
+                # 높이: 행 높이 25pt × (96/72) = 33px
+                t_xl_img.width = 152
                 t_xl_img.height = 33
                 ws.add_image(t_xl_img, f'H{row}')
 
