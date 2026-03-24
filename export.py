@@ -44,15 +44,15 @@ def generate_excel_or_zip(subject_name, subject_content, course_time, lecture_da
         instructor_sig = instructor_info.get("signature")
         if instructor_sig:
             img_pil = base64_to_image(instructor_sig)
-            # 종횡비 유지하면서 해당 셀 크기(287x109) 이하로 맞춤
-            img_pil.thumbnail((287, 109), PILImage.Resampling.LANCZOS)
-            
             img_byte_arr = io.BytesIO()
             img_pil.save(img_byte_arr, format='PNG')
             img_byte_arr.seek(0)
             
             xl_img = xlImage(img_byte_arr)
-            # 썸네일 크기 그대로 반영되어 셀 안에 예쁘게 배치됨
+            # 강사 서명 셀 크기: 너비 6cm(≈227px), 높이 맞춤(109px)
+            # xl_img.width/height를 직접 지정하면 원본 이미지 비율과 무관하게 셀에 딱 맞게 배치
+            xl_img.width = 227
+            xl_img.height = 109
             ws.add_image(xl_img, 'I27')
         
         row_start = 10
@@ -65,14 +65,15 @@ def generate_excel_or_zip(subject_name, subject_content, course_time, lecture_da
             trainee_sig = trainee.get("signature")
             if trainee_sig:
                 t_img_pil = base64_to_image(trainee_sig)
-                # 종횡비 유지하면서 해당 셀 크기(184x33) 이하로 맞춤
-                t_img_pil.thumbnail((184, 33), PILImage.Resampling.LANCZOS)
-                
                 t_byte_arr = io.BytesIO()
                 t_img_pil.save(t_byte_arr, format='PNG')
                 t_byte_arr.seek(0)
                 
                 t_xl_img = xlImage(t_byte_arr)
+                # 훈련생 서명 셀 크기: 너비 4cm(≈151px), 높이 맞춤(33px)
+                # xl_img.width/height를 직접 지정하면 원본 이미지 비율과 무관하게 셀에 딱 맞게 배치
+                t_xl_img.width = 151
+                t_xl_img.height = 33
                 ws.add_image(t_xl_img, f'H{row}')
 
         output = io.BytesIO()
