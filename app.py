@@ -329,7 +329,7 @@ def show_trainee():
             canvas_result = st_canvas(
                 stroke_width=2, stroke_color="#000000", background_color="#ffffff",
                 height=150, width=400, drawing_mode="freedraw", key=f"canvas_t_{sel_crs}_{fk_t}",
-                display_toolbar=False
+                display_toolbar=True
             )
             if st.form_submit_button("Submit"):
                 valid_sig = canvas_result.json_data is not None and len(canvas_result.json_data.get("objects", [])) > 0
@@ -404,7 +404,7 @@ def show_instructor():
             canvas_inst = st_canvas(
                 stroke_width=2, stroke_color="#000000", background_color="#ffffff",
                 height=150, width=400, drawing_mode="freedraw", key=f"canvas_i_{sel_crs}_{fk_i}",
-                display_toolbar=False
+                display_toolbar=True
             )
             
             if st.form_submit_button("Submit & Generate Report"):
