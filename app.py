@@ -19,12 +19,53 @@ def inject_custom_css():
 
     st.markdown(f"""
         <style>
-        /* 🎨 포인트 컬러 변수 설정 */
-        :root {{
-            --accent: {theme_color};
+        /* =========================================================
+           🔒 LIGHT MODE LOCK — 다크 모드 완전 차단
+           사용자가 수동으로 Dark를 선택해도 무력화
+           ========================================================= */
+
+        /* 1) 앱 전체 배경을 항상 밝은색으로 고정 */
+        .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {{
+            background-color: #f8fafc !important;
         }}
 
-        /* 📱 폰트만 지정 (색상은 Streamlit 자체 테마에 위임) */
+        /* 2) 다크 모드 data attribute가 붙어도 배경+텍스트 강제 덮어씌우기 */
+        [data-theme="dark"] .stApp,
+        [data-theme="dark"] [data-testid="stAppViewContainer"] {{
+            background-color: #f8fafc !important;
+            color: #0f172a !important;
+        }}
+
+        /* 3) 다크 모드에서 모든 텍스트 요소 강제 어둡게 */
+        [data-theme="dark"] p,
+        [data-theme="dark"] span,
+        [data-theme="dark"] label,
+        [data-theme="dark"] div,
+        [data-theme="dark"] [data-testid="stWidgetLabel"],
+        [data-theme="dark"] [data-testid="stWidgetLabel"] p,
+        [data-theme="dark"] [data-testid="stMarkdownContainer"] p {{
+            color: #0f172a !important;
+        }}
+
+        /* 4) 다크 모드에서 입력 필드도 라이트 스타일 유지 */
+        [data-theme="dark"] .stTextInput input,
+        [data-theme="dark"] .stTextArea textarea,
+        [data-theme="dark"] .stSelectbox [data-baseweb="select"] {{
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            border: 1px solid #cbd5e1 !important;
+        }}
+
+        /* 5) 사이드바 및 폼 배경도 고정 */
+        [data-theme="dark"] section[data-testid="stSidebar"],
+        [data-theme="dark"] [data-testid="stForm"] {{
+            background-color: #f1f5f9 !important;
+        }}
+
+        /* 🎨 포인트 컬러 변수 */
+        :root {{ --accent: {theme_color}; }}
+
+        /* 📱 폰트 */
         .stApp {{
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }}
